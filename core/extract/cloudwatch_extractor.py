@@ -7,7 +7,7 @@ from botocore.config import Config
 from botocore.exceptions import ClientError
 
 import common.aws_service as aws_service_helper
-from core.extract.extract_parser import parse_log
+from core.extract.extract_parser import parse_log_from_entries
 
 logger = logging.getLogger("WorkloadReplicatorLogger")
 
@@ -89,7 +89,7 @@ class CloudwatchExtractor:
                     log_entries):
         if log_type == "connectionlog":
             logger.info("Parsing connection logs...")
-            parse_log(
+            parse_log_from_entries(
                 log_entries,
                 "connectionlog.gz",
                 connections,
@@ -101,7 +101,7 @@ class CloudwatchExtractor:
             )
         if log_type == "useractivitylog":
             logger.info("Parsing user activity logs...")
-            parse_log(
+            parse_log_from_entries(
                 log_entries,
                 "useractivitylog.gz",
                 connections,
