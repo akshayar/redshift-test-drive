@@ -153,6 +153,7 @@ def cw_get_paginated_logs(log_group_name, log_stream_name, start_time, end_time,
         )
     return log_list
 
+
 def s3_upload(local_file_name, bucket, key=None):
     s3 = boto3.resource("s3")
     k = key if key else local_file_name
