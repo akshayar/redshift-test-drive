@@ -7,7 +7,6 @@ from botocore.config import Config
 from botocore.exceptions import ClientError
 import asyncio
 import functools
-import gzip
 
 logger = logging.getLogger("WorkloadReplicatorLogger")
 
@@ -153,42 +152,6 @@ def cw_get_paginated_logs(log_group_name, log_stream_name, start_time, end_time,
             PaginationConfig=pagination_config,
         )
     return log_list
-
-
-def cw_write_logs_to_file(log_group_name, log_stream_name, start_time, end_time, region, file_path):
-    cloudwatch_client = boto3.client("logs", region)
-    paginator = cloudwatch_client.get_paginator("filter_log_events")
-    pagination_config = {"MaxItems": 10000}
-    convert_to_millis_since_epoch = (
-        lambda time: int(
-            (time.replace(tzinfo=None) - datetime.datetime.utcfromtimestamp(0)).total_seconds()
-        )
-                     * 1000
-    )
-    start_time_millis_since_epoch = convert_to_millis_since_epoch(start_time)
-    end_time_millis_since_epoch = convert_to_millis_since_epoch(end_time)
-    response_iterator = paginator.paginate(
-        logGroupName=log_group_name,
-        logStreamNames=[log_stream_name],
-        startTime=start_time_millis_since_epoch,
-        endTime=end_time_millis_since_epoch,
-        PaginationConfig=pagination_config,
-    )
-    with gzip.open(file_path, "wt") as gzip_file:
-        next_token = None
-        while next_token != "":
-            for response in response_iterator:
-                next_token = response.get("nextToken", "")
-                for event in response["events"]:
-                    gzip_file.write("\n".join(event["message"]))
-            pagination_config.update({"StartingToken": next_token})
-            response_iterator = paginator.paginate(
-                logGroupName=log_group_name,
-                logStreamNames=[log_stream_name],
-                startTime=start_time_millis_since_epoch,
-                endTime=end_time_millis_since_epoch,
-                PaginationConfig=pagination_config,
-            )
 
 def s3_upload(local_file_name, bucket, key=None):
     s3 = boto3.resource("s3")
