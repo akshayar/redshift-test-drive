@@ -67,13 +67,6 @@ class CloudwatchExtractor:
                         f"Extracting for log group: {log_group_name} between time {start_time} and {end_time}"
                     )
 
-                    log_list = aws_service_helper.cw_get_paginated_logs(
-                        log_group_name,
-                        stream["logStreamName"],
-                        start_time,
-                        end_time,
-                        region,
-                    )
                     if "useractivitylog" in log_group_name:
                         log_type = "useractivitylog"
                     elif "connectionlog" in log_group_name:
@@ -85,12 +78,11 @@ class CloudwatchExtractor:
                         continue
 
                     with tempfile.TemporaryDirectory(suffix="TestDrive") as tempdir:
-                        with gzip.open(f"{tempdir}/{log_type}.gz", "wt") as gzip_file:
-                            gzip_file.write("\n".join(log_list))
-
+                        target_file_path = f"{tempdir}/{log_type}.gz"
+                        aws_service_helper.cw_write_logs_to_file(log_group_name, stream["logStreamName"], start_time, end_time, region, target_file_path)
                         if log_type == "connectionlog":
                             logger.info("Parsing connection logs...")
-                            with gzip.open(f"{tempdir}/connectionlog.gz", "r") as gzip_file:
+                            with gzip.open(target_file_path, "r") as gzip_file:
                                 parse_log(
                                     gzip_file,
                                     "connectionlog.gz",
@@ -103,7 +95,7 @@ class CloudwatchExtractor:
                                 )
                         if log_type == "useractivitylog":
                             logger.info("Parsing user activity logs...")
-                            with gzip.open(f"{tempdir}/useractivitylog.gz", "r") as gzip_file:
+                            with gzip.open(target_file_path, "r") as gzip_file:
                                 parse_log(
                                     gzip_file,
                                     "useractivitylog.gz",
