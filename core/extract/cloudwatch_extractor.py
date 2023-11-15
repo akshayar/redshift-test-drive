@@ -114,6 +114,7 @@ class CloudwatchExtractor:
 
     def _read_and_parse_logs(self, log_group_name, log_stream_name, start_time, end_time, region, log_type, connections,
                              last_connections, logs, databases):
+        logger.info("_read_and_parse_logs reading Cloudwatch logs and parsing")
         cloudwatch_client = boto3.client("logs", region)
         paginator = cloudwatch_client.get_paginator("filter_log_events")
         pagination_config = {"MaxItems": 10000}
@@ -137,6 +138,7 @@ class CloudwatchExtractor:
             for response in response_iterator:
                 next_token = response.get("nextToken", "")
                 for event in response["events"]:
+                    logger.info("_read_and_parse_logs reading logs and parsing them %s", next_token)
                     self._parse_logs(connections, databases, end_time, last_connections, log_type, logs, start_time,
                                      event["message"])
             pagination_config.update({"StartingToken": next_token})
