@@ -87,6 +87,7 @@ def _parse_user_activity_log(file, logs, databases, start_time, end_time, is_fil
     )
     if is_file:
         for line in file.readlines():
+            line = line.decode("utf-8")
             _parse_user_activity_log_entry(databases, datetime_pattern, end_time, fetch_pattern, line, logs, start_time, user_activity_log)
     else:
         for line in file:
@@ -94,7 +95,6 @@ def _parse_user_activity_log(file, logs, databases, start_time, end_time, is_fil
 
 
 def _parse_user_activity_log_entry(databases, datetime_pattern, end_time, fetch_pattern, line, logs, start_time, user_activity_log):
-    line = line.decode("utf-8")
     if datetime_pattern.match(line):
         if user_activity_log.xid and is_valid_log(
                 user_activity_log, start_time, end_time
@@ -184,6 +184,7 @@ def _parse_start_node_log_entry(databases, datetime_pattern, end_time, line, log
 def _parse_connection_log(file, connections, last_connections, start_time, end_time, is_file=True):
     if is_file:
         for line in file.readlines():
+            line = line.decode("utf-8")
             _parse_connection_log_entry(connections, end_time, last_connections, line, start_time)
     else:
         for line in file:
@@ -191,7 +192,6 @@ def _parse_connection_log(file, connections, last_connections, start_time, end_t
 
 
 def _parse_connection_log_entry(connections, end_time, last_connections, line, start_time):
-    line = line.decode("utf-8")
     connection_information = line.split("|")
     connection_event = connection_information[0]
     event_time = datetime.datetime.strptime(
