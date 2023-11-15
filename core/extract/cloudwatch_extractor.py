@@ -137,9 +137,9 @@ class CloudwatchExtractor:
         while next_token != "":
             for response in response_iterator:
                 next_token = response.get("nextToken", "")
-                for event in response["events"]:
-                    self._parse_logs(connections, databases, end_time, last_connections, log_type, logs, start_time,
-                                     event["message"])
+                self._parse_logs(connections, databases, end_time, last_connections, log_type, logs, start_time,
+                                 response["events"])
+
             pagination_config.update({"StartingToken": next_token})
             response_iterator = paginator.paginate(
                 logGroupName=log_group_name,

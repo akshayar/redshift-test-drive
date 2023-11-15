@@ -90,7 +90,8 @@ def _parse_user_activity_log(file, logs, databases, start_time, end_time, is_fil
             line = line.decode("utf-8")
             _parse_user_activity_log_entry(databases, datetime_pattern, end_time, fetch_pattern, line, logs, start_time, user_activity_log)
     else:
-        for line in file:
+        for event in file:
+            line = event["message"]
             _parse_user_activity_log_entry(databases, datetime_pattern, end_time, fetch_pattern, line, logs, start_time, user_activity_log)
 
 
@@ -141,7 +142,8 @@ def _parse_start_node_log(file, logs, databases, start_time, end_time, is_file=T
         for line in file.readlines():
             _parse_start_node_log_entry(databases, datetime_pattern, end_time, line, logs, start_node_log, start_time)
     else:
-        for line in file:
+        for event in file:
+            line = event["message"]
             _parse_start_node_log_entry(databases, datetime_pattern, end_time, line, logs, start_node_log, start_time)
 
 
@@ -190,7 +192,8 @@ def _parse_connection_log(file, connections, last_connections, start_time, end_t
             line = line.decode("utf-8")
             _parse_connection_log_entry(connections, end_time, last_connections, line, start_time)
     else:
-        for line in file:
+        for event in file:
+            line = event["message"]
             _parse_connection_log_entry(connections, end_time, last_connections, line, start_time)
 
 
