@@ -1,6 +1,5 @@
 import logging
 import tempfile
-import gzip
 import sys
 import datetime
 import boto3
@@ -81,40 +80,40 @@ class CloudwatchExtractor:
                         )
                         continue
 
-                    self._read_and_parse_logs(log_group_name, stream_name, start_time, end_time, region, log_type, connections, last_connections, logs, databases)
+                    self._read_and_parse_logs(log_group_name, stream_name, start_time, end_time, region, log_type,
+                                              connections, last_connections, logs, databases)
 
         return connections, logs, databases, last_connections
 
     def _parse_logs(self, connections, databases, end_time, last_connections, log_type, logs, start_time,
-                   log_entries):
+                    log_entries):
         if log_type == "connectionlog":
             logger.info("Parsing connection logs...")
-            with gzip.open(log_entries, "r") as gzip_file:
-                parse_log(
-                    gzip_file,
-                    "connectionlog.gz",
-                    connections,
-                    last_connections,
-                    logs,
-                    databases,
-                    start_time,
-                    end_time,
-                )
+            parse_log(
+                log_entries,
+                "connectionlog.gz",
+                connections,
+                last_connections,
+                logs,
+                databases,
+                start_time,
+                end_time,
+            )
         if log_type == "useractivitylog":
             logger.info("Parsing user activity logs...")
-            with gzip.open(log_entries, "r") as gzip_file:
-                parse_log(
-                    gzip_file,
-                    "useractivitylog.gz",
-                    connections,
-                    last_connections,
-                    logs,
-                    databases,
-                    start_time,
-                    end_time,
-                )
+            parse_log(
+                log_entries,
+                "useractivitylog.gz",
+                connections,
+                last_connections,
+                logs,
+                databases,
+                start_time,
+                end_time,
+            )
 
-    def _read_and_parse_logs(self, log_group_name, log_stream_name, start_time, end_time, region, log_type, connections, last_connections, logs, databases):
+    def _read_and_parse_logs(self, log_group_name, log_stream_name, start_time, end_time, region, log_type, connections,
+                             last_connections, logs, databases):
         cloudwatch_client = boto3.client("logs", region)
         paginator = cloudwatch_client.get_paginator("filter_log_events")
         pagination_config = {"MaxItems": 10000}
