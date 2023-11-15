@@ -96,9 +96,11 @@ def _parse_user_activity_log(file, logs, databases, start_time, end_time, is_fil
 
 def _parse_user_activity_log_entry(databases, datetime_pattern, end_time, fetch_pattern, line, logs, start_time, user_activity_log):
     if datetime_pattern.match(line):
+        logger.info("Date pattern matched %s", line)
         if user_activity_log.xid and is_valid_log(
                 user_activity_log, start_time, end_time
         ):
+            logger.info("Valid log %s", line)
             filename = user_activity_log.get_filename()
             if filename in logs:
                 # Check if duplicate. This happens with JDBC connections.
