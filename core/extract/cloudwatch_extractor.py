@@ -88,7 +88,7 @@ class CloudwatchExtractor:
     def _parse_logs(self, connections, databases, end_time, last_connections, log_type, logs, start_time,
                     log_entries):
         if log_type == "connectionlog":
-            logger.info("Parsing connection logs...%s %s %s", str(databases), start_time, end_time)
+            logger.info("Parsing connection logs...%s %s %s", repr(databases), start_time, end_time)
             parse_log_from_entries(
                 log_entries,
                 "connectionlog.gz",
@@ -100,7 +100,7 @@ class CloudwatchExtractor:
                 end_time,
             )
         if log_type == "useractivitylog":
-            logger.info("Parsing user activity logs...%s %s %s", str(databases), start_time, end_time)
+            logger.info("Parsing user activity logs...%s %s %s", repr(databases), start_time, end_time)
             parse_log_from_entries(
                 log_entries,
                 "useractivitylog.gz",
@@ -114,7 +114,7 @@ class CloudwatchExtractor:
 
     def _read_and_parse_logs(self, log_group_name, log_stream_name, start_time, end_time, region, log_type, connections,
                              last_connections, logs, databases):
-        logger.info("_read_and_parse_logs reading Cloudwatch logs and parsing %s %s %s %s %s", log_group_name, log_stream_name, start_time, end_time, str(databases))
+        logger.info("_read_and_parse_logs reading Cloudwatch logs and parsing %s %s %s %s %s", log_group_name, log_stream_name, start_time, end_time, repr(databases))
         cloudwatch_client = boto3.client("logs", region)
         paginator = cloudwatch_client.get_paginator("filter_log_events")
         pagination_config = {"MaxItems": 10000}
