@@ -66,15 +66,15 @@ def parse_log_from_entries(
     :param end_time: end_time of extract
     """
     if "useractivitylog" in filename:
-        logger.debug(f"Parsing user activity log: {filename}")
+        logger.debug(f"parse_log_from_entries Parsing user activity log: {filename}")
         _parse_user_activity_log(log_entries, logs, databases, start_time, end_time, is_file=False)
     elif "connectionlog" in filename:
-        logger.debug(f"Parsing connection log: {filename}")
+        logger.debug(f"parse_log_from_entries Parsing connection log: {filename}")
         _parse_connection_log(
             log_entries, connections, last_connections, start_time, end_time, is_file=False
         )
     elif "start_node" in filename:
-        logger.debug(f"Parsing start node log: {filename}")
+        logger.debug(f"parse_log_from_entries Parsing start node log: {filename}")
         _parse_start_node_log(log_entries, logs, databases, start_time, end_time, is_file=False)
 
 

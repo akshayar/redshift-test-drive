@@ -137,7 +137,6 @@ class CloudwatchExtractor:
         while next_token != "":
             for response in response_iterator:
                 next_token = response.get("nextToken", "")
-                logger.info("Logs %s", response["events"])
                 self._parse_logs(connections, databases, end_time, last_connections, log_type, logs, start_time,
                                  response["events"])
 
@@ -149,6 +148,7 @@ class CloudwatchExtractor:
                 endTime=end_time_millis_since_epoch,
                 PaginationConfig=pagination_config,
             )
-        logging.info("Logs entries keys - %s", len(logs))
+        logger.info("Logs entries keys - %s", len(logs))
         for key in logs.keys():
-            logging.info("Logs entry for key %s - %s", key, len(logs[key]))
+            logger.info("Logs entry for key %s - %s", key, len(logs[key]))
+
