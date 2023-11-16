@@ -82,13 +82,15 @@ class CloudwatchExtractor:
 
                     self._read_and_parse_logs(log_group_name, stream_name, start_time, end_time, region, log_type,
                                               connections, last_connections, logs, databases)
-
+        logging.info("Logs entries keys - %s", len(logs))
+        for key in logs.keys():
+            logging.info("Logs entry for key %s - %s", key, len(logs[key]))
         return connections, logs, databases, last_connections
 
     def _parse_logs(self, connections, databases, end_time, last_connections, log_type, logs, start_time,
                     log_entries):
         if log_type == "connectionlog":
-            logger.info("Parsing connection logs...%s %s %s", repr(databases), start_time, end_time)
+            logger.debug("Parsing connection logs...%s %s %s", repr(databases), start_time, end_time)
             parse_log_from_entries(
                 log_entries,
                 "connectionlog.gz",
@@ -100,7 +102,7 @@ class CloudwatchExtractor:
                 end_time,
             )
         if log_type == "useractivitylog":
-            logger.info("Parsing user activity logs...%s %s %s", repr(databases), start_time, end_time)
+            logger.debug("Parsing user activity logs...%s %s %s", repr(databases), start_time, end_time)
             parse_log_from_entries(
                 log_entries,
                 "useractivitylog.gz",
