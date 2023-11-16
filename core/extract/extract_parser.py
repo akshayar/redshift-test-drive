@@ -9,14 +9,15 @@ logger = logging.getLogger("WorkloadReplicatorLogger")
 
 
 def parse_log(
-    log_file,
-    filename,
-    connections,
-    last_connections,
-    logs,
-    databases,
-    start_time,
-    end_time,
+        log_file,
+        filename,
+        connections,
+        last_connections,
+        logs,
+        databases,
+        start_time,
+        end_time,
+        is_file=True
 ):
     """
     This function parses the different logs and send it to the respective function
@@ -29,33 +30,35 @@ def parse_log(
     :param databases: databases dict
     :param start_time: start_time of extract
     :param end_time: end_time of extract
+    :param is_file: If the handle passed is file.
     """
     if "useractivitylog" in filename:
         logger.debug(f"Parsing user activity log: {filename}")
-        _parse_user_activity_log(log_file, logs, databases, start_time, end_time)
+        _parse_user_activity_log(log_file, logs, databases, start_time, end_time, is_file)
     elif "connectionlog" in filename:
         logger.debug(f"Parsing connection log: {filename}")
         _parse_connection_log(
-            log_file, connections, last_connections, start_time, end_time
+            log_file, connections, last_connections, start_time, end_time, is_file
         )
     elif "start_node" in filename:
         logger.debug(f"Parsing start node log: {filename}")
-        _parse_start_node_log(log_file, logs, databases, start_time, end_time)
+        _parse_start_node_log(log_file, logs, databases, start_time, end_time, is_file)
 
 
-def _parse_user_activity_log(file, logs, databases, start_time, end_time):
+def _parse_user_activity_log(file, logs, databases, start_time, end_time, is_file):
     user_activity_log = Log()
     datetime_pattern = re.compile(r"'\d+-\d+-\d+T\d+:\d+:\d+Z UTC")
     fetch_pattern = re.compile(
         r"fetch\s+(next|all|forward all|\d+|forward\s+\d+)\s+(from|in)\s+\S+",
         flags=re.IGNORECASE,
     )
-    for line in file.readlines():
-        line = line.decode("utf-8")
+    for line in file:
+        if is_file:
+            line = line.decode("utf-8")
 
         if datetime_pattern.match(line):
             if user_activity_log.xid and is_valid_log(
-                user_activity_log, start_time, end_time
+                    user_activity_log, start_time, end_time
             ):
                 filename = user_activity_log.get_filename()
                 if filename in logs:
@@ -63,7 +66,7 @@ def _parse_user_activity_log(file, logs, databases, start_time, end_time):
                     prev_query = logs[filename][-1]
                     if not is_duplicate(prev_query.text, user_activity_log.text):
                         if fetch_pattern.search(
-                            prev_query.text
+                                prev_query.text
                         ) and fetch_pattern.search(user_activity_log.text):
                             user_activity_log.text = f"--{user_activity_log.text}"
                             logs[filename].append(user_activity_log)
@@ -88,15 +91,15 @@ def _parse_user_activity_log(file, logs, databases, start_time, end_time):
             user_activity_log.text += line
 
 
-def _parse_start_node_log(file, logs, databases, start_time, end_time):
+def _parse_start_node_log(file, logs, databases, start_time, end_time, is_file):
     start_node_log = Log()
 
     datetime_pattern = re.compile(r"'\d+-\d+-\d+ \d+:\d+:\d+ UTC")
 
-    for line in file.readlines():
+    for line in file:
         if datetime_pattern.match(line):
             if start_node_log.xid and is_valid_log(
-                start_node_log, start_time, end_time
+                    start_node_log, start_time, end_time
             ):
                 filename = start_node_log.get_filename()
                 if filename in logs:
@@ -132,9 +135,10 @@ def _parse_start_node_log(file, logs, databases, start_time, end_time):
             start_node_log.text += line
 
 
-def _parse_connection_log(file, connections, last_connections, start_time, end_time):
-    for line in file.readlines():
-        line = line.decode("utf-8")
+def _parse_connection_log(file, connections, last_connections, start_time, end_time, is_file):
+    for line in file:
+        if is_file:
+            line = line.decode("utf-8")
 
         connection_information = line.split("|")
         connection_event = connection_information[0]
@@ -149,9 +153,9 @@ def _parse_connection_log(file, connections, last_connections, start_time, end_t
             username = connection_information[6].strip()
         application_name = connection_information[15]
         if (
-            username != "rdsdb"
-            and (not start_time or event_time >= start_time)
-            and (not end_time or event_time <= end_time)
+                username != "rdsdb"
+                and (not start_time or event_time >= start_time)
+                and (not end_time or event_time <= end_time)
         ):
             connection_log = ConnectionLog(
                 event_time, end_time, database_name, username, pid

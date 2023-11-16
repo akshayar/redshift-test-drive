@@ -142,7 +142,7 @@ def cw_get_paginated_logs(log_group_name, log_stream_name, start_time, end_time,
         for response in response_iterator:
             next_token = response.get("nextToken", "")
             for event in response["events"]:
-                log_list.append(event["message"])
+                log_list.append(event["message"] + " ")
         pagination_config.update({"StartingToken": next_token})
         response_iterator = paginator.paginate(
             logGroupName=log_group_name,

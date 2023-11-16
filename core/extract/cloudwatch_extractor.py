@@ -1,7 +1,10 @@
 import logging
 import tempfile
-import gzip
 import sys
+import datetime
+import boto3
+from botocore.config import Config
+from botocore.exceptions import ClientError
 
 import common.aws_service as aws_service_helper
 from core.extract.extract_parser import parse_log
@@ -83,36 +86,37 @@ class CloudwatchExtractor:
                             f"Unsupported log file {log_group_name}, cannot determine type"
                         )
                         continue
-
-                    with tempfile.TemporaryDirectory(suffix="TestDrive") as tempdir:
-                        with gzip.open(f"{tempdir}/{log_type}.gz", "wt") as gzip_file:
-                            gzip_file.write("\n".join(log_list))
-
-                        if log_type == "connectionlog":
-                            logger.info("Parsing connection logs...")
-                            with gzip.open(f"{tempdir}/connectionlog.gz", "r") as gzip_file:
-                                parse_log(
-                                    gzip_file,
-                                    "connectionlog.gz",
-                                    connections,
-                                    last_connections,
-                                    logs,
-                                    databases,
-                                    start_time,
-                                    end_time,
-                                )
-                        if log_type == "useractivitylog":
-                            logger.info("Parsing user activity logs...")
-                            with gzip.open(f"{tempdir}/useractivitylog.gz", "r") as gzip_file:
-                                parse_log(
-                                    gzip_file,
-                                    "useractivitylog.gz",
-                                    connections,
-                                    last_connections,
-                                    logs,
-                                    databases,
-                                    start_time,
-                                    end_time,
-                                )
+                    self._parse_logs(connections, databases, end_time, last_connections, log_type, logs, start_time,
+                                     log_list)
+                    logger.info("Logs entries keys for log type %s- %s",log_type, len(logs))
 
         return connections, logs, databases, last_connections
+
+    def _parse_logs(self, connections, databases, end_time, last_connections, log_type, logs, start_time,
+                    log_entries):
+        if log_type == "connectionlog":
+            logger.debug("Parsing connection logs...%s %s %s", repr(databases), start_time, end_time)
+            parse_log(
+                log_entries,
+                "connectionlog.gz",
+                connections,
+                last_connections,
+                logs,
+                databases,
+                start_time,
+                end_time,
+                is_file=False
+            )
+        if log_type == "useractivitylog":
+            logger.debug("Parsing user activity logs...%s %s %s", repr(databases), start_time, end_time)
+            parse_log(
+                log_entries,
+                "useractivitylog.gz",
+                connections,
+                last_connections,
+                logs,
+                databases,
+                start_time,
+                end_time,
+                is_file=False
+            )
