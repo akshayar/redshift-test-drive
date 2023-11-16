@@ -82,9 +82,7 @@ class CloudwatchExtractor:
 
                     self._read_and_parse_logs(log_group_name, stream_name, start_time, end_time, region, log_type,
                                               connections, last_connections, logs, databases)
-        logging.info("Logs entries keys - %s", len(logs))
-        for key in logs.keys():
-            logging.info("Logs entry for key %s - %s", key, len(logs[key]))
+
         return connections, logs, databases, last_connections
 
     def _parse_logs(self, connections, databases, end_time, last_connections, log_type, logs, start_time,
@@ -139,6 +137,7 @@ class CloudwatchExtractor:
         while next_token != "":
             for response in response_iterator:
                 next_token = response.get("nextToken", "")
+                logger.info("Logs %s", response["events"])
                 self._parse_logs(connections, databases, end_time, last_connections, log_type, logs, start_time,
                                  response["events"])
 
@@ -150,3 +149,6 @@ class CloudwatchExtractor:
                 endTime=end_time_millis_since_epoch,
                 PaginationConfig=pagination_config,
             )
+        logging.info("Logs entries keys - %s", len(logs))
+        for key in logs.keys():
+            logging.info("Logs entry for key %s - %s", key, len(logs[key]))
