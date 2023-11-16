@@ -88,9 +88,7 @@ class CloudwatchExtractor:
                         continue
                     self._parse_logs(connections, databases, end_time, last_connections, log_type, logs, start_time,
                                      log_list)
-                    logger.info("Logs entries keys - %s", len(logs))
-                    for key in logs.keys():
-                        logger.info("Logs entry for key %s - %s", key, len(logs[key]))
+                    logger.info("Logs entries keys for log type %s- %s",log_type, len(logs))
 
         return connections, logs, databases, last_connections
 
