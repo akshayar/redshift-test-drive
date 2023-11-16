@@ -7,7 +7,7 @@ from botocore.config import Config
 from botocore.exceptions import ClientError
 
 import common.aws_service as aws_service_helper
-from core.extract.extract_parser import parse_log_from_entries
+from core.extract.extract_parser import parse_log
 
 logger = logging.getLogger("WorkloadReplicatorLogger")
 
@@ -70,6 +70,13 @@ class CloudwatchExtractor:
                         f"Extracting for log group: {log_group_name} between time {start_time} and {end_time}"
                     )
 
+                    log_list = aws_service_helper.cw_get_paginated_logs(
+                        log_group_name,
+                        stream["logStreamName"],
+                        start_time,
+                        end_time,
+                        region,
+                    )
                     if "useractivitylog" in log_group_name:
                         log_type = "useractivitylog"
                     elif "connectionlog" in log_group_name:
@@ -79,9 +86,11 @@ class CloudwatchExtractor:
                             f"Unsupported log file {log_group_name}, cannot determine type"
                         )
                         continue
-
-                    self._read_and_parse_logs(log_group_name, stream_name, start_time, end_time, region, log_type,
-                                              connections, last_connections, logs, databases)
+                    self._parse_logs(connections, databases, end_time, last_connections, log_type, logs, start_time,
+                                     log_list)
+                    logger.info("Logs entries keys - %s", len(logs))
+                    for key in logs.keys():
+                        logger.info("Logs entry for key %s - %s", key, len(logs[key]))
 
         return connections, logs, databases, last_connections
 
@@ -89,7 +98,7 @@ class CloudwatchExtractor:
                     log_entries):
         if log_type == "connectionlog":
             logger.debug("Parsing connection logs...%s %s %s", repr(databases), start_time, end_time)
-            parse_log_from_entries(
+            parse_log(
                 log_entries,
                 "connectionlog.gz",
                 connections,
@@ -98,10 +107,11 @@ class CloudwatchExtractor:
                 databases,
                 start_time,
                 end_time,
+                is_file=False
             )
         if log_type == "useractivitylog":
             logger.debug("Parsing user activity logs...%s %s %s", repr(databases), start_time, end_time)
-            parse_log_from_entries(
+            parse_log(
                 log_entries,
                 "useractivitylog.gz",
                 connections,
@@ -110,45 +120,5 @@ class CloudwatchExtractor:
                 databases,
                 start_time,
                 end_time,
+                is_file=False
             )
-
-    def _read_and_parse_logs(self, log_group_name, log_stream_name, start_time, end_time, region, log_type, connections,
-                             last_connections, logs, databases):
-        logger.info("_read_and_parse_logs reading Cloudwatch logs and parsing %s %s %s %s %s", log_group_name, log_stream_name, start_time, end_time, repr(databases))
-        cloudwatch_client = boto3.client("logs", region)
-        paginator = cloudwatch_client.get_paginator("filter_log_events")
-        pagination_config = {"MaxItems": 10000}
-        convert_to_millis_since_epoch = (
-            lambda time: int(
-                (time.replace(tzinfo=None) - datetime.datetime.utcfromtimestamp(0)).total_seconds()
-            )
-                         * 1000
-        )
-        start_time_millis_since_epoch = convert_to_millis_since_epoch(start_time)
-        end_time_millis_since_epoch = convert_to_millis_since_epoch(end_time)
-        response_iterator = paginator.paginate(
-            logGroupName=log_group_name,
-            logStreamNames=[log_stream_name],
-            startTime=start_time_millis_since_epoch,
-            endTime=end_time_millis_since_epoch,
-            PaginationConfig=pagination_config,
-        )
-        next_token = None
-        while next_token != "":
-            for response in response_iterator:
-                next_token = response.get("nextToken", "")
-                self._parse_logs(connections, databases, end_time, last_connections, log_type, logs, start_time,
-                                 response["events"])
-
-            pagination_config.update({"StartingToken": next_token})
-            response_iterator = paginator.paginate(
-                logGroupName=log_group_name,
-                logStreamNames=[log_stream_name],
-                startTime=start_time_millis_since_epoch,
-                endTime=end_time_millis_since_epoch,
-                PaginationConfig=pagination_config,
-            )
-        logger.info("Logs entries keys - %s", len(logs))
-        for key in logs.keys():
-            logger.info("Logs entry for key %s - %s", key, len(logs[key]))
-
