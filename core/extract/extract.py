@@ -18,7 +18,7 @@ logger = logging.getLogger("WorkloadReplicatorLogger")
 
 
 def main():
-
+    logger.info("Platform architecture %s", platform.architecture())
     extract_start_time = time.time()
 
     # Parse config file
@@ -112,5 +112,4 @@ def main():
 
 
 if __name__ == "__main__":
-    logger.info("Platform architecture %s", platform.architecture())
     main()
