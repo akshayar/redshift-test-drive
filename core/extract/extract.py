@@ -110,6 +110,7 @@ def main():
     total_extract_time = str(datetime.timedelta(seconds=(time.time() - extract_start_time)))
     logger.info(f"Extract completed in {total_extract_time}")
 
+
 if __name__ == "__main__":
-    print("Platform architecture", platform.architecture())
+    logger.info("Platform architecture %s", platform.architecture())
     main()
