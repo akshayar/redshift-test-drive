@@ -11,6 +11,8 @@ import common.log as log_helper
 from common import aws_service as aws_service_helper
 from common.util import cluster_dict
 import core.extract.extractor as extractor
+import platform
+
 
 logger = logging.getLogger("WorkloadReplicatorLogger")
 
@@ -109,4 +111,5 @@ def main():
     logger.info(f"Extract completed in {total_extract_time}")
 
 if __name__ == "__main__":
+    print("Platform architecture", platform.architecture())
     main()
