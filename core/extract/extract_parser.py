@@ -5,7 +5,7 @@ import dateutil.parser
 from core.replay.connections_parser import Log, ConnectionLog
 from core.util.log_validation import is_valid_log, is_duplicate
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("WorkloadReplicatorLogger")
 
 
 def parse_log(

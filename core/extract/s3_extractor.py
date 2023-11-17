@@ -5,7 +5,7 @@ from tqdm import tqdm
 from core.util.log_validation import get_logs_in_range
 from core.extract.extract_parser import parse_log
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("WorkloadReplicatorLogger")
 
 
 class S3Extractor:

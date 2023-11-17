@@ -28,7 +28,7 @@ from core.extract.local_extractor import LocalExtractor
 from tools.ExternalObjectReplicator import external_object_replicator
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("WorkloadReplicatorLogger")
 
 
 class Extractor:
