@@ -12,7 +12,7 @@ from common import aws_service as aws_service_helper
 from common.util import cluster_dict
 import core.extract.extractor as extractor
 
-logger = logging.getLogger("WorkloadReplicatorLogger")
+logger = logging.getLogger(__name__)
 
 
 def main():

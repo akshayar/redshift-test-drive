@@ -4,7 +4,7 @@ import os
 from tqdm import tqdm
 from core.extract import extract_parser
 
-logger = logging.getLogger("WorkloadReplicatorLogger")
+logger = logging.getLogger(__name__)
 
 
 class LocalExtractor:

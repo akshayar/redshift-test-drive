@@ -9,7 +9,7 @@ from botocore.exceptions import ClientError
 import common.aws_service as aws_service_helper
 from core.extract.extract_parser import parse_log
 
-logger = logging.getLogger("WorkloadReplicatorLogger")
+logger = logging.getLogger(__name__)
 
 
 class CloudwatchExtractor:
